@@ -19,6 +19,7 @@ class Contact
   field :github_number, type: String
   field :session_data, type: Hash
   field :screenshot, type: String
+  field :screenshots, type: Array, default: []
   field :record_id, type: String
   field :entry_id, type: String
   field :line_id, type: String
@@ -52,6 +53,7 @@ class Contact
   validate :freecen_selected_county_requirements
 
   mount_uploader :screenshot, ScreenshotUploader
+  mount_uploaders :screenshots, ScreenshotUploader
 
   before_validation :normalize_freecen_contact_fields
   before_create :url_check, :add_identifier, :add_screenshot_location
@@ -242,7 +244,15 @@ class Contact
   end
 
   def add_screenshot_location
-    self.screenshot_location = "uploads/contact/screenshot/#{self.screenshot.model._id.to_s}/#{self.screenshot.filename}" if self.screenshot.filename.present?
+    if screenshot&.filename.present?
+      self.screenshot_location = "uploads/contact/screenshot/#{screenshot.model._id}/#{screenshot.filename}"
+      return
+    end
+
+    first = screenshots&.first
+    return if first.blank? || first.filename.blank?
+
+    self.screenshot_location = "uploads/contact/screenshots/#{id}/#{first.filename}"
   end
 
   def add_message_to_userid_messages_for_contact(message)
