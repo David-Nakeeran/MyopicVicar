@@ -57,54 +57,49 @@ class User
 
   # Override Devise method to find user by login (email or username)
   def self.find_for_database_authentication(warden_conditions)
-    conditions = warden_conditions.dup
-
+    conditions = warden_conditions. dup
+    
     if (login = conditions.delete(:login))
       sanitized_login = sanitize_login(login)
       return nil unless sanitized_login
-
-      pattern = login_lookup_pattern(sanitized_login)
+      
+      # SAFE:  Mongoid automatically escapes values
       where(conditions).or(
-        { email: pattern },
-        { username: pattern }
+        { email: sanitized_login },
+        { username:  sanitized_login }
       ).first
-    elsif conditions.key?(:email) || conditions.key?(:username)
+    elsif conditions.key? (:email) || conditions.key?(:username)
       where(conditions).first
     end
   end
 
   def self.find_first_by_auth_conditions(warden_conditions)
     conditions = warden_conditions.dup
-
+    
     if (login = conditions.delete(:login))
       sanitized_login = sanitize_login(login)
       return nil unless sanitized_login
-
-      pattern = login_lookup_pattern(sanitized_login)
+      
+      # SAFE: Mongoid automatically escapes values - call . or on where()
       where({}).or(
-        { email: pattern },
-        { username: pattern }
+        { email: sanitized_login },
+        { username: sanitized_login }
       ).first
     else
       where(conditions).first
     end
   end
 
-  # Full-string regex; MongoDB string equality is case-sensitive, so match any casing.
-  def self.login_lookup_pattern(sanitized_login)
-    /^#{Regexp.escape(sanitized_login)}$/i
-  end
-
   # Sanitize login input
   def self.sanitize_login(login)
     return nil if login.blank?
-
+    
     # Sanitize: strip whitespace and convert to lowercase
     sanitized = login.to_s.strip.downcase
-
+    
     # Return nil if empty or too long (prevent DoS)
-    return nil if sanitized.blank? || sanitized.length > 255
-
+    return nil if sanitized.blank? || sanitized. length > 255
+    
     sanitized
   end
 
