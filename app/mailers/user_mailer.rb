@@ -1,7 +1,7 @@
 ##############################################
 # This file is in desperate need of refactoring
 ##############################################
-class UserMailer < ActionMailer::Base
+class UserMailer < Devise::Mailer
   reg_website = MyopicVicar::Application.config.website == 'https://www.freereg.org.uk' ? '' : 'Test'
   cen_website = MyopicVicar::Application.config.website == 'https://www.freecen.org.uk' ? '' : 'Test'
   if MyopicVicar::Application.config.template_set == 'freereg'
@@ -189,9 +189,17 @@ class UserMailer < ActionMailer::Base
   end
 
   def get_attachment(contact)
-    if contact.screenshot_location.present?
-      @file_name = File.basename(contact.screenshot_location)
-      attachments[@file_name] = File.read(contact.screenshot.path)
+    if contact.respond_to?(:screenshot) && contact.screenshot&.path.present?
+      file_name = File.basename(contact.screenshot.path)
+      attachments[file_name] = File.binread(contact.screenshot.path)
+    end
+
+    if contact.respond_to?(:screenshots) && contact.screenshots.present?
+      contact.screenshots.each do |img|
+        next if img.blank? || img.path.blank?
+        file_name = File.basename(img.path)
+        attachments[file_name] = File.binread(img.path)
+      end
     end
   end
 
@@ -267,6 +275,12 @@ class UserMailer < ActionMailer::Base
     else
       mail(to: "#{coordinator.person_forename} <#{coordinator.email_address}>", cc: "#{owner_details.person_forename} <#{owner_details.email_address}>", subject: subject) if coordinator.present?
     end
+  end
+
+  def freecen_gaz_modified_report(email_subject, email_body, email_to)
+    email_addresses = []
+    email_addresses << email_to
+    mail(:to => email_addresses, :subject => email_subject, :body => email_body)
   end
 
   def freecen_move_fc2_place_linkages_report(email_subject, email_body, report, report_name, email_to)

@@ -60,6 +60,7 @@ module MyopicVicar
     config.gtm_key = app['gtm_key']
     config.cta_display_status = app['cta_display_status']
     config.server_upgrade = app['server_upgrade']
+    config.site_notice_banner_html = app['site_notice_banner_html']
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
 
@@ -109,11 +110,15 @@ module MyopicVicar
 
       config.assets.paths << Rails.root.join('app', 'assets_freecen', 'styles')
       config.assets.paths << Rails.root.join('app', 'assets_freecen', 'javascripts')
+      config.assets.paths << Rails.root.join('app', 'assets_freecen', 'resources')
+      config.assets.paths << Rails.root.join('app', 'assets_freecen', 'images')
     when TemplateSet::FREEREG
       config.freexxx_display_name = 'FreeREG'
       config.assets.paths << Rails.root.join('app', 'assets_freereg')
       config.assets.paths << Rails.root.join('app', 'assets_freereg', 'javascripts')
       config.assets.paths << Rails.root.join('app', 'assets_freereg', 'styles')
+      config.assets.paths << Rails.root.join('app', 'assets_freereg', 'resources')
+      config.assets.paths << Rails.root.join('app', 'assets_freereg', 'images')
     when TemplateSet::FREEBMD
       config.freexxx_display_name = 'FreeBMD'
       config.assets.paths << Rails.root.join('app', 'assets_freebmd')
