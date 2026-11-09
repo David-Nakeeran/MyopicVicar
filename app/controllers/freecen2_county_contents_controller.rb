@@ -23,8 +23,8 @@ class Freecen2CountyContentsController < ApplicationController
 
   def new_records_index
     if session[:contents_date].blank?
-      @freecen2_contents = Freecen2CountyContent.where(county: 'ALL').order_by(interval_end: :desc).first
-      session[:contents_date] = @freecen2_county_contents.interval_end
+      @freecen2_county_contents = Freecen2CountyContent.where(county: 'ALL').order_by(interval_end: :desc).first
+      session[:contents_date] = @freecen2_county_contents&.interval_end
     end
     @interval_end = session[:contents_date]
 
