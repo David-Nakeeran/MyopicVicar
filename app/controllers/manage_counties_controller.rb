@@ -322,7 +322,8 @@ class ManageCountiesController < ApplicationController
   end
 
   def place_range
-    session[:character] = params[:params] if params[:params].present?
+    # Only a letter or a letter range such as A-C (it becomes a regex character class below)
+    session[:character] = params[:params] if params[:params].to_s.match?(/\A[A-Za-z](-[A-Za-z])?\z/)
     redirect_back(fallback_location: new_manage_resource_path, notice: 'You did not make a range selection') && return if session[:character].blank?
 
     @character = session[:character]

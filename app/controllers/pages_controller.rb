@@ -53,7 +53,12 @@ class PagesController < ApplicationController
       head :not_found
       return
     end
-    
+
+    if internal_page?(page_path) && !system_documentation_reader?
+      head :not_found
+      return
+    end
+
     # Convert path to view file name
     # Handle both "about" and "help/getting-started" style paths
     view_name = page_path.to_s
@@ -75,6 +80,38 @@ class PagesController < ApplicationController
       else
         render plain: 'Not Found', status: :not_found
       end
+    end
+  end
+
+  private
+
+  # Internal documentation for the team: only signed-in staff whose menu has 'System Documentation' see these.
+  INTERNAL_PAGES = {
+    'freereg' => {
+      folders: %w[system-documents],
+      pages: %w[the-production-server-setup installing-freereg setup-on-vervet changing-storage-engines
+                writing-crontab-tasks updating-freereg building-freereg removal-of-chapman-codes
+                report-on-consistency-with-userids]
+    },
+    'freecen' => { folders: [], pages: %w[draft-system-documentation] }
+  }.freeze
+
+  def internal_page?(page_path)
+    internal = INTERNAL_PAGES.fetch(MyopicVicar::Application.config.template_set.to_s, nil)
+    return false if internal.blank?
+
+    path = page_path.to_s.delete_prefix('/').delete_suffix('/')
+    internal[:pages].include?(path) || internal[:folders].any? { |folder| path == folder || path.start_with?("#{folder}/") }
+  end
+
+  def system_documentation_reader?
+    return false unless user_signed_in?
+
+    user = get_user
+    return false if user.blank?
+
+    ([user.person_role] + Array(user.secondary_role)).compact.any? do |role|
+      UseridRole::OPTIONS.fetch(role, []).include?('System Documentation')
     end
   end
 end
