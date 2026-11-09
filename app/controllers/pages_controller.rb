@@ -90,7 +90,8 @@ class PagesController < ApplicationController
     'freereg' => {
       folders: %w[system-documents],
       pages: %w[the-production-server-setup installing-freereg setup-on-vervet changing-storage-engines
-                writing-crontab-tasks updating-freereg building-freereg]
+                writing-crontab-tasks updating-freereg building-freereg removal-of-chapman-codes
+                report-on-consistency-with-userids]
     },
     'freecen' => { folders: [], pages: %w[draft-system-documentation] }
   }.freeze
